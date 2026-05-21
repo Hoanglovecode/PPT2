@@ -7,4 +7,5 @@
 #define ll long long
 int main(){
   printf("hello world");
+  printf("Hello trung");
 }
