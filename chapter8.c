@@ -8,4 +8,7 @@
 int main(){
   printf("Bỏ code chương 8 vào đây");
   //nv cua phuc
+  //ok tôi đang làm nhiệm của tôi
+  //tôi code ở đây xong tôi nhấn run
+  //tôi qua git desktop tôi commit xong pull lên
 }
