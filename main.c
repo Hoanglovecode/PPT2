@@ -8,4 +8,6 @@
 int main(){
   printf("hello world");
   printf("Hello trung");
-} Hoàng Gay
+  printf("hello khánh");
+  printf("Hello phúc");
+} 
