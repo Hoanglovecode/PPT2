@@ -6,5 +6,5 @@
 #include <ctype.h>
 #define ll long long
 int main(){
-  
+  //sềnwiefirifwifiwfi
 }
