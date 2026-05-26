@@ -5,10 +5,6 @@
 #include <string.h>
 #include <ctype.h>
 #define ll long long
-//Đây là main branch chuong6
 int main(){
-  printf("hello world");
-  printf("Hello trung");
-  printf("hello khánh");
-  printf("Hello phúc");
+  printf("Bỏ code chương 6 vào đây");
 }
