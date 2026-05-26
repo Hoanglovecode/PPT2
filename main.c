@@ -5,18 +5,6 @@
 #include <string.h>
 #include <ctype.h>
 #define ll long long
-
-
-
-
-
-
-
-
-
 int main(){
-  printf("hello world");
-  printf("Hello trung");
-  printf("hello khánh");
-  printf("Hello phúc");
-} khánh gay
+  
+}
