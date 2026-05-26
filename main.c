@@ -5,19 +5,10 @@
 #include <string.h>
 #include <ctype.h>
 #define ll long long
-
-
-
-
-
-
-
-
-
+//main ở branch chương 5
 int main(){
   printf("hello world");
   printf("Hello trung");
   printf("hello khánh");
   printf("Hello phúc");
-} khánh gay
-} 
+}
