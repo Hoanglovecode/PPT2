@@ -7,6 +7,4 @@
 #define ll long long
 int main(){
   printf("thả hàm chương 5 vào đây đê:");
-  //adsfafa
-  //càqwfq
 }
