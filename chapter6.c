@@ -6,5 +6,6 @@
 #include <ctype.h>
 #define ll long long
 int main(){
-  printf("Bỏ code chương 6 vào đây");rgwrgw
+  printf("Bỏ code chương 6 vào đây");
+  //câ
 }
