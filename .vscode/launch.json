@@ -8,8 +8,13 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
+<<<<<<< Updated upstream
       "cwd": "d:/Download/Project-PPT/PPT2",
       "program": "d:/Download/Project-PPT/PPT2/build/Debug/outDebug",
+=======
+      "cwd": "c:/GibHub desktop/PPT2",
+      "program": "c:/GibHub desktop/PPT2/build/Debug/outDebug",
+>>>>>>> Stashed changes
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
