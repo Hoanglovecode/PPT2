@@ -294,7 +294,7 @@ void tinhVectorRieng(float C[][MAX + 1], int n, float lambda, float X[])
     // Y = [lambda^(n-1), lambda^(n-2), ..., lambda, 1]^T
     for(int j = 1; j <= n; j++)
     {
-        Y[j] = pow(lambda, n - j);
+        Y[j] = powf(lambda, (float)(n - j));
     }
 
     // Vectơ rieng cua ma tran goc la X = C * Y
@@ -347,8 +347,7 @@ int main()
         printf("\nNhap lua chon: ");
 
         if(scanf("%d", &choice) != 1)
-        {
-            printf("\nLua chon khong hop le! Vui long nhap lai.\n");
+        {     printf("\nLua chon khong hop le! Vui long nhap lai.\n");
             clear_input_buffer();
             choice = -1;
             continue;
@@ -545,3 +544,4 @@ int main()
 
     return 0;
 }
+       
