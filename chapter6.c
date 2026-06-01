@@ -7,4 +7,5 @@
 #define ll long long
 int main(){
   printf("Bỏ code chương 6 vào đây");
+  printf("Hello world");
 }
