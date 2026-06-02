@@ -31,6 +31,41 @@ void in_duong_ke(void) {
     printf("------------------------------------------------------------\n");
 }
 
+void in_menu(const char *cac_tuy_chon[], int n_tuy_chon) {
+    int max_w = 60;
+    int i, j, p;
+    for (i = 0; i < n_tuy_chon; i++) {
+        int char_len = 0;
+        j = 0;
+        while (cac_tuy_chon[i][j] != '\0') {
+            if ((cac_tuy_chon[i][j] & 0xC0) != 0x80) char_len++;
+            j++;
+        }
+        if (char_len > max_w - 6) max_w = char_len + 6;
+    }
+
+    printf("┌");
+    for (i = 0; i < max_w - 2; i++) printf("─");
+    printf("┐\n");
+
+    for (i = 0; i < n_tuy_chon; i++) {
+        int char_len = 0;
+        j = 0;
+        while (cac_tuy_chon[i][j] != '\0') {
+            if ((cac_tuy_chon[i][j] & 0xC0) != 0x80) char_len++;
+            j++;
+        }
+        int padding = max_w - 4 - char_len;
+        printf("│ %s", cac_tuy_chon[i]);
+        for (p = 0; p < padding; p++) printf(" ");
+        printf(" │\n");
+    }
+
+    printf("└");
+    for (i = 0; i < max_w - 2; i++) printf("─");
+    printf("┘\n");
+}
+
 int doc_int_range(const char *msg, int min, int max) {
     char line[256], extra;
     long value;
@@ -77,13 +112,37 @@ int doc_co_khong(const char *msg) {
 }
 
 void in_tieu_de(const char *ten) {
-    in_duong_ke();
-    printf("%s\n", ten);
-    in_duong_ke();
+    int max_width = 70;
+    int char_len = 0;
+    int i = 0;
+    while (ten[i] != '\0') {
+        if ((ten[i] & 0xC0) != 0x80) {
+            char_len++;
+        }
+        i++;
+    }
+    int padding = max_width - 4 - char_len;
+    if (padding < 0) padding = 0;
+    int pad_left = padding / 2;
+    int pad_right = padding - pad_left;
+
+    printf("┌");
+    for (i = 0; i < max_width - 2; i++) printf("─");
+    printf("┐\n");
+
+    printf("│ ");
+    for (i = 0; i < pad_left; i++) printf(" ");
+    printf("%s", ten);
+    for (i = 0; i < pad_right; i++) printf(" ");
+    printf(" │\n");
+
+    printf("└");
+    for (i = 0; i < max_width - 2; i++) printf("─");
+    printf("┘\n");
 }
 
 void in_muc(const char *ten) {
-    printf("\n[%s]\n", ten);
+    printf("\n❖ %s\n", ten);
 }
 
 void in_vector(const char *ten, double x[MAX], int n) {
@@ -1562,9 +1621,12 @@ void menu_chuong8(void) {
     int chon;
     do {
         in_tieu_de("CHƯƠNG 8 - TÍNH GẦN ĐÚNG TÍCH PHÂN XÁC ĐỊNH");
-        printf("1. Tính từ bảng giá trị y[0..n] với khoảng cách h\n");
-        printf("2. Tính từ đa thức P(x) trên đoạn [a, b]\n");
-        printf("0. Quay lại menu chính\n");
+        const char *options[] = {
+            "1. Tính từ bảng giá trị y[0..n] với khoảng cách h",
+            "2. Tính từ đa thức P(x) trên đoạn [a, b]",
+            "0. Quay lại menu chính"
+        };
+        in_menu(options, 3);
         chon = doc_int_range("Chọn kiểu dữ liệu: ", 0, 2);
 
         if (chon == 1) tich_phan_tu_bang_tong_quat();
@@ -1582,15 +1644,17 @@ int main(void) {
     system("chcp 65001 > nul");
 #endif
     do {
-        in_tieu_de("CHƯƠNG TRÌNH PHƯƠNG PHÁP TÍNH - CHƯƠNG 5 ĐẾN CHƯƠNG 8");
-        printf("Chương trình nhận dữ liệu tổng quát do người dùng nhập.\n");
-        printf("Mỗi mục có hướng dẫn ngắn trước khi nhập số liệu.\n\n");
-        printf("1. Chương 5: Giải hệ phương trình tuyến tính\n");
-        printf("2. Chương 6: Giá trị riêng và vectơ riêng\n");
-        printf("3. Chương 7: Nội suy và bình phương bé nhất\n");
-        printf("4. Chương 8: Tính gần đúng tích phân xác định\n");
-        printf("0. Thoát\n");
-        chon = doc_int_range("Chọn chương: ", 0, 4);
+        in_tieu_de("CHƯƠNG TRÌNH MÔN PHƯƠNG PHÁP TÍNH");
+        printf("Mục lục hướng dẫn sẽ xuất hiện trước khi bạn nhập số liệu ở từng chương.\n\n");
+        const char *options[] = {
+            "1. Chương 5: Giải hệ phương trình tuyến tính",
+            "2. Chương 6: Giá trị riêng và vectơ riêng",
+            "3. Chương 7: Nội suy và bình phương bé nhất",
+            "4. Chương 8: Tính gần đúng tích phân xác định",
+            "0. Thoát"
+        };
+        in_menu(options, 5);
+        chon = doc_int_range("Chọn chương bạn muốn chạy: ", 0, 4);
 
         if (chon == 1) menu_chuong5();
         else if (chon == 2) menu_chuong6();
