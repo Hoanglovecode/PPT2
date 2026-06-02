@@ -544,7 +544,6 @@ void phuong_phap_krame(void) {
     }
     printf("\nNghiệm của hệ:\n");
     in_vector("x", x, n);
-    printf("Sai số kiểm tra max|A*x - b| = %.3e\n", sai_so_he_lon_nhat(goc, x, n));
 }
 
 
@@ -565,7 +564,6 @@ void phuong_phap_gauss(void) {
         in_muc("Kết quả");
         printf("Nghiệm của hệ:\n");
         in_vector("x", x, n);
-        printf("Sai số kiểm tra max|A*x - b| = %.3e\n", sai_so_he_lon_nhat(goc, x, n));
     } else {
         bao_loi_he(status);
     }
@@ -665,8 +663,6 @@ void phuong_phap_gauss_siedel(void) {
     printf("Số lần lặp đã thực hiện: %d\n", lap <= max_lap ? lap : max_lap);
     printf("Nghiệm gần đúng:\n");
     in_vector("x", x, n);
-    printf("Sai số lặp cuối max|x_mới - x_cũ| = %.3e\n", sai_so);
-    printf("Sai số kiểm tra max|A*x - b| = %.3e\n", sai_so_he_lon_nhat(goc, x, n));
 }
 
 void phuong_phap_giam_du(void) {
@@ -737,7 +733,7 @@ void phuong_phap_giam_du(void) {
     printf("Nghiệm gần đúng:\n");
     in_vector("x", x, n);
     printf("Số dư lớn nhất hiện tại = %.3e\n", maxr);
-    printf("Sai số kiểm tra max|A*x - b| = %.3e\n", sai_so_he_lon_nhat(goc, x, n));
+    printf(" max|A*x - b| = %.3e\n", sai_so_he_lon_nhat(goc, x, n));
 }
 
 void menu_chuong5(void) {
@@ -880,6 +876,95 @@ double gia_tri_da_thuc_dac_trung(double P[MAX][MAX], int n, double lambda) {
     return value;
 }
 
+void evaluate_poly_double(double coeffs[], int degree, double x, double *val, double *deriv) {
+    *val = coeffs[0];
+    *deriv = 0.0;
+    for (int i = 1; i <= degree; i++) {
+        *deriv = (*deriv) * x + *val;
+        *val = (*val) * x + coeffs[i];
+    }
+}
+
+double tim_nghiem_newton(double coeffs[], int degree, double start_x) {
+    double x = start_x;
+    for (int iter = 0; iter < 500; iter++) {
+        double val, deriv;
+        evaluate_poly_double(coeffs, degree, x, &val, &deriv);
+        if (absd(deriv) < 1e-12) {
+            x += 0.1;
+            continue;
+        }
+        double dx = val / deriv;
+        x -= dx;
+        if (absd(dx) < 1e-8) {
+            return x;
+        }
+    }
+    return x;
+}
+
+int tim_tri_rieng_thuc(double coeffs[], int degree, double roots[]) {
+    double current_coeffs[MAX + 1];
+    for (int i = 0; i <= degree; i++) {
+        current_coeffs[i] = coeffs[i];
+    }
+    int num_roots = 0;
+    int deg = degree;
+    double guesses[] = {0.0, 1.0, -1.0, 5.0, -5.0, 10.0, -10.0, 0.5, -0.5, 20.0, -20.0, 50.0, -50.0};
+    int num_guesses = sizeof(guesses) / sizeof(guesses[0]);
+
+    while (deg > 0) {
+        double root = 0;
+        int found = 0;
+        for (int g = 0; g < num_guesses; g++) {
+            double candidate = tim_nghiem_newton(current_coeffs, deg, guesses[g]);
+            double val, deriv;
+            evaluate_poly_double(current_coeffs, deg, candidate, &val, &deriv);
+            if (absd(val) < 1e-5) {
+                int duplicate = 0;
+                for (int r = 0; r < num_roots; r++) {
+                    if (absd(roots[r] - candidate) < 1e-4) {
+                        duplicate = 1;
+                        break;
+                    }
+                }
+                if (!duplicate) {
+                    root = candidate;
+                    found = 1;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            break;
+        }
+        roots[num_roots++] = root;
+
+        // Deflation
+        double next_coeffs[MAX + 1];
+        next_coeffs[0] = current_coeffs[0];
+        for (int i = 1; i < deg; i++) {
+            next_coeffs[i] = current_coeffs[i] + root * next_coeffs[i - 1];
+        }
+        deg--;
+        for (int i = 0; i <= deg; i++) {
+            current_coeffs[i] = next_coeffs[i];
+        }
+    }
+
+    // Sort roots in ascending order
+    for (int i = 0; i < num_roots - 1; i++) {
+        for (int j = i + 1; j < num_roots; j++) {
+            if (roots[i] > roots[j]) {
+                double temp = roots[i];
+                roots[i] = roots[j];
+                roots[j] = temp;
+            }
+        }
+    }
+    return num_roots;
+}
+
 double sai_so_vecto_rieng(double A[MAX][MAX], double x[MAX], int n, double lambda) {
     int i, j;
     double s, e, maxe = 0;
@@ -906,7 +991,25 @@ void tim_tri_rieng_danilevsky(void) {
 
         in_muc("Đa thức đặc trưng");
         in_da_thuc_dac_trung(P, n);
-        printf("Các nghiệm của p(lambda) = 0 là các giá trị riêng của ma trận A.\n");
+
+        // Tim va in cac gia tri rieng thuc
+        double coeffs[MAX + 1];
+        coeffs[0] = 1.0;
+        for (int j = 1; j <= n; j++) {
+            coeffs[j] = -P[0][j - 1];
+        }
+        double roots[MAX + 1];
+        int num_roots = tim_tri_rieng_thuc(coeffs, n, roots);
+
+        in_muc("Các giá trị riêng thực tìm được (nghiệm của đa thức đặc trưng)");
+        if (num_roots == 0) {
+            printf("Không tìm thấy giá trị riêng thực nào (hoặc tất cả các nghiệm là phức).\n");
+        } else {
+            printf("Tìm thấy %d giá trị riêng thực:\n", num_roots);
+            for (int r = 0; r < num_roots; r++) {
+                printf("  lambda_%d = %.10lf\n", r + 1, roots[r]);
+            }
+        }
 
         in_muc("Ma trận chuyển T");
         printf("Khi đã có một giá trị riêng lambda, lập y = (lambda^(n-1), lambda^(n-2), ..., 1), sau đó tính x = T*y để được vectơ riêng.\n");
@@ -966,8 +1069,9 @@ void tim_vecto_rieng_danilevsky(void) {
     if (maxv > EPS) {
         printf("\nVectơ riêng chuẩn hóa theo phần tử có trị tuyệt đối lớn nhất:\n");
         for (i = 0; i < n; i++) printf("x[%d] = %.10lf\n", i + 1, x[i] / maxv);
+    } else {
+        printf("\nVectơ riêng có tất cả phần tử gần bằng 0, không thể chuẩn hóa.\n");
     }
-    printf("Sai số kiểm tra max|A*x - lambda*x| = %.3e\n", sai_so_vecto_rieng(A_goc, x, n, lambda));
 }
 
 
