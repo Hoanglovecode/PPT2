@@ -87,68 +87,6 @@ void in_vector(const char *ten, double x[MAX], int n) {
         printf("%s[%d] = %.10lf\n", ten, i + 1, gan_bang_0(x[i]) ? 0.0 : x[i]);
     }
 }
-
-void in_ma_tran_vuong(double a[MAX][MAX], int n) {
-    int i, j;
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < n; j++) printf("%13.6lf ", gan_bang_0(a[i][j]) ? 0.0 : a[i][j]);
-        printf("\n");
-    }
-}
-
-void in_ma_tran_mo_rong(double a[MAX][MAX + 1], int n) {
-    int i, j;
-    for (i = 0; i < n; i++) {
-        for (j = 0; j <= n; j++) printf("%13.6lf ", gan_bang_0(a[i][j]) ? 0.0 : a[i][j]);
-        printf("\n");
-    }
-}
-
-void sao_chep_ma_tran_mo_rong(double src[MAX][MAX + 1], double dst[MAX][MAX + 1], int n) {
-    int i, j;
-    for (i = 0; i < n; i++)
-        for (j = 0; j <= n; j++)
-            dst[i][j] = src[i][j];
-}
-
-void sao_chep_ma_tran_vuong(double src[MAX][MAX], double dst[MAX][MAX], int n) {
-    int i, j;
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n; j++)
-            dst[i][j] = src[i][j];
-}
-
-void nhap_ma_tran_mo_rong(double a[MAX][MAX + 1], int *n) {
-    int i, j;
-    char prompt[96];
-    in_muc("Nhap he phuong trinh A*x = b");
-    printf("Dang nhap: moi dong gom cac he so cua mot phuong trinh va so hang tu do.\n");
-    printf("Vi du voi 3 an: a1 a2 a3 b, tuong ung a1*x1 + a2*x2 + a3*x3 = b.\n");
-    *n = doc_int_range("Nhap so an n (1..30): ", 1, MAX);
-    for (i = 0; i < *n; i++) {
-        printf("Dong %d:\n", i + 1);
-        for (j = 0; j <= *n; j++) {
-            if (j < *n) sprintf(prompt, "  he so cua x%d = ", j + 1);
-            else sprintf(prompt, "  ve phai b%d = ", i + 1);
-            a[i][j] = doc_double(prompt);
-        }
-    }
-}
-
-void nhap_ma_tran_vuong(double a[MAX][MAX], int *n) {
-    int i, j;
-    char prompt[96];
-    in_muc("Nhap ma tran vuong A");
-    *n = doc_int_range("Nhap cap ma tran n (1..30): ", 1, MAX);
-    for (i = 0; i < *n; i++) {
-        printf("Dong %d:\n", i + 1);
-        for (j = 0; j < *n; j++) {
-            sprintf(prompt, "  a[%d][%d] = ", i + 1, j + 1);
-            a[i][j] = doc_double(prompt);
-        }
-    }
-}
-
 void nhap_bang_xy(double x[MAX], double y[MAX], int *m) {
     int i;
     char prompt[96];
