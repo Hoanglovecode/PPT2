@@ -1195,23 +1195,44 @@ double newton_sai_phan_tien(double x[MAX], double y[MAX], int m, double c) {
     return kq;
 }
 
-double hermite_cap1(double x[MAX], double y[MAX], double yp[MAX], int m, double c) {
+double hermite_cap1(double x[MAX], double y[MAX], double yp[MAX], int has_yp[MAX], int m, double c) {
     double z[MAX2], Q[MAX2][MAX2];
+    int node_idx[MAX2];
     double result, term;
-    int N = 2 * m;
+    int N = 0;
     int i, j;
 
-    for (i = 0; i < N; i++)
-        for (j = 0; j < N; j++) Q[i][j] = 0;
-
     for (i = 0; i < m; i++) {
-        z[2 * i] = x[i];
-        z[2 * i + 1] = x[i];
-        Q[2 * i][0] = y[i];
-        Q[2 * i + 1][0] = y[i];
-        Q[2 * i + 1][1] = yp[i];
-        if (i == 0) Q[2 * i][1] = yp[i];
-        else Q[2 * i][1] = (Q[2 * i][0] - Q[2 * i - 1][0]) / (z[2 * i] - z[2 * i - 1]);
+        if (has_yp[i]) {
+            z[N] = x[i];
+            node_idx[N] = i;
+            N++;
+            z[N] = x[i];
+            node_idx[N] = i;
+            N++;
+        } else {
+            z[N] = x[i];
+            node_idx[N] = i;
+            N++;
+        }
+    }
+
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            Q[i][j] = 0.0;
+        }
+    }
+
+    for (i = 0; i < N; i++) {
+        Q[i][0] = y[node_idx[i]];
+    }
+
+    for (i = 1; i < N; i++) {
+        if (z[i] == z[i - 1]) {
+            Q[i][1] = yp[node_idx[i]];
+        } else {
+            Q[i][1] = (Q[i][0] - Q[i - 1][0]) / (z[i] - z[i - 1]);
+        }
     }
 
     for (j = 2; j < N; j++) {
@@ -1221,7 +1242,7 @@ double hermite_cap1(double x[MAX], double y[MAX], double yp[MAX], int m, double 
     }
 
     result = Q[0][0];
-    term = 1;
+    term = 1.0;
     for (i = 1; i < N; i++) {
         term *= (c - z[i - 1]);
         result += Q[i][i] * term;
@@ -1293,7 +1314,7 @@ void bpbnn_da_thuc(void) {
         if (i == 0) printf("%.10lf", he_so[i]);
         else printf(" + (%.10lf)*x^%d", he_so[i], i);
     }
-    printf("\nTổng bình phương sai số S = %.10lf\n", sse_da_thuc(x, y, m, he_so, bac));
+    printf("\n");
 }
 
 void bpbnn_ham_mu(void) {
@@ -1443,30 +1464,57 @@ void chay_bang_sai_phan(void) {
 
 void chay_hermite(void) {
     double x[MAX], y[MAX], yp[MAX], c, kq;
-    int m, i;
+    int has_yp[MAX];
+    int m, i, chon_cach_nhap;
     char prompt[96];
 
     in_tieu_de("NỘI SUY HERMITE CẤP 1");
-    printf("Can nhap f(x) va dao ham f'(x) tai tung moc.\n");
+    printf("Cần nhập f(x) và đạo hàm f'(x) tại từng mốc.\n");
     nhap_bang_xy(x, y, &m);
     if (!x_phan_biet(x, m)) {
         printf("Các mốc x bị trùng nhau, không thể lập bảng Hermite.\n");
         return;
     }
-    if (2 * m > MAX2) {
-        printf("Số mốc quá lớn cho bảng Hermite cấp 1.\n");
+
+    in_muc("Lựa chọn cách nhập đạo hàm f'");
+    printf("1. Nhập đạo hàm f'(x) tại TẤT CẢ các mốc\n");
+    printf("2. Chỉ nhập đạo hàm f'(x) tại MỘT SỐ mốc\n");
+    chon_cach_nhap = doc_int_range("Lựa chọn (1 hoặc 2): ", 1, 2);
+
+    if (chon_cach_nhap == 1) {
+        in_muc("Nhập đạo hàm cấp 1");
+        for (i = 0; i < m; i++) {
+            sprintf(prompt, "f'(%g) = ", x[i]);
+            yp[i] = doc_double(prompt);
+            has_yp[i] = 1;
+        }
+    } else {
+        in_muc("Nhập đạo hàm cấp 1");
+        for (i = 0; i < m; i++) {
+            sprintf(prompt, "Có đạo hàm tại mốc x = %g không? (1: Có, 0: Không): ", x[i]);
+            has_yp[i] = doc_int_range(prompt, 0, 1);
+            if (has_yp[i]) {
+                sprintf(prompt, "  f'(%g) = ", x[i]);
+                yp[i] = doc_double(prompt);
+            } else {
+                yp[i] = 0.0;
+            }
+        }
+    }
+
+    int tong_so_moc = 0;
+    for (i = 0; i < m; i++) {
+        tong_so_moc += (has_yp[i] ? 2 : 1);
+    }
+    if (tong_so_moc > MAX2) {
+        printf("Số mốc trong bảng nội suy Hermite (%d) vượt quá giới hạn cho phép (%d).\n", tong_so_moc, MAX2);
         return;
     }
 
-    in_muc("Nhập đạo hàm cấp 1");
-    for (i = 0; i < m; i++) {
-        sprintf(prompt, "f'(%g) = ", x[i]);
-        yp[i] = doc_double(prompt);
-    }
     c = doc_double("Nhập giá trị cần tính c = ");
     canh_bao_ngoai_khoang(x, m, c);
 
-    kq = hermite_cap1(x, y, yp, m, c);
+    kq = hermite_cap1(x, y, yp, has_yp, m, c);
     in_muc("Kết quả");
     printf("Gia tri gan dung f(%.10lf) = %.10lf\n", c, kq);
 }
