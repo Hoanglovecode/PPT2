@@ -1122,36 +1122,130 @@ double lagrange_cach_deu(double x[MAX], double y[MAX], int m, double c) {
     return s;
 }
 
-double ayken_dang1(double x[MAX], double y[MAX], int m, double c) {
-    double w = 1, s = 0, d;
+double ayken_dang1(double x[MAX], double y[MAX], int m, double c)
+{
     int i, j;
+    double d, w = 1, s = 0;
 
-    for (i = 0; i < m; i++) {
-        if (absd(c - x[i]) < EPS) return y[i];
-    }
-    for (i = 0; i < m; i++) w *= (c - x[i]);
+    printf("\nBang noi suy Aitken\n\n");
 
-    for (i = 0; i < m; i++) {
-        d = c - x[i];
-        for (j = 0; j < m; j++) {
-            if (j != i) d *= (x[i] - x[j]);
+    // In bảng Aitken
+    for(i = 0; i < m; i++)
+    {
+        for(j = 0; j < m; j++)
+        {
+            if(j == i)
+                printf("%12.2lf", c - x[i]);
+            else
+                printf("%12.2lf", x[i] - x[j]);
         }
+
+        d = 1;
+        for(j = 0; j < m; j++)
+        {
+            if(j == i)
+                d *= (c - x[i]);
+            else
+                d *= (x[i] - x[j]);
+        }
+
+        printf(" | %12.6lf\n", d);
+    }
+
+    // Nếu c trùng với một nút nội suy
+    for(i = 0; i < m; i++)
+    {
+        if(absd(c - x[i]) < EPS)
+            return y[i];
+    }
+
+    // Tính w = (c-x0)(c-x1)...(c-x(m-1))
+    for(i = 0; i < m; i++)
+    {
+        w *= (c - x[i]);
+    }
+
+    // Tính tổng s
+    for(i = 0; i < m; i++)
+    {
+        d = c - x[i];
+
+        for(j = 0; j < m; j++)
+        {
+            if(j != i)
+                d *= (x[i] - x[j]);
+        }
+
         s += y[i] / d;
     }
+
     return w * s;
 }
 
-double ayken_dang2(double x[MAX], double y[MAX], int m, double c) {
-    double p[MAX][MAX];
-    int i, j;
 
-    for (i = 0; i < m; i++) p[i][0] = y[i];
-    for (j = 1; j < m; j++) {
-        for (i = j; i < m; i++) {
-            p[i][j] = ((c - x[i - j]) * p[i][j - 1] - (c - x[i]) * p[i - 1][j - 1]) / (x[i] - x[i - j]);
+
+double ayken_dang2(double x[], double y[], int m, double c)
+{
+    double p[100][100];
+    int i, j;
+    char name[50];
+
+    // Cột đầu tiên
+    for(i = 0; i < m; i++)
+        p[i][0] = y[i];
+
+    // Tính bảng Aitken
+    for(j = 1; j < m; j++)
+    {
+        for(i = j; i < m; i++)
+        {
+            p[i][j] =
+                ((c - x[i-j]) * p[i][j-1]
+                - (c - x[i]) * p[i-1][j-1])
+                / (x[i] - x[i-j]);
         }
     }
-    return p[m - 1][m - 1];
+
+    printf("\nBang Aitken (dang 2)\n\n");
+
+    // Tiêu đề
+    printf("%8s%8s", "xi", "yi");
+
+    for(j = 1; j < m; j++)
+    {
+        strcpy(name, "L");
+
+        for(i = 0; i <= j; i++)
+        {
+            char tmp[5];
+            sprintf(tmp, "%d", i);
+            strcat(name, tmp);
+        }
+
+        strcat(name, "(x)");
+
+        printf("%15s", name);
+    }
+
+    printf("%15s\n", "xi-x");
+
+    // Nội dung bảng
+    for(i = 0; i < m; i++)
+    {
+        printf("%8.2lf%8.2lf", x[i], y[i]);
+
+        for(j = 1; j < m; j++)
+        {
+            if(i >= j)
+                printf("%15.3lf", p[i][j]);
+            else
+                printf("%15s", "");
+        }
+
+        printf("%15.2lf\n", x[i] - c);
+    }
+
+    return p[m-1][m-1];
 }
 
 void lap_bang_sai_phan(double y[MAX], double d[MAX][MAX], int m) {
@@ -1165,15 +1259,37 @@ void lap_bang_sai_phan(double y[MAX], double d[MAX][MAX], int m) {
     }
 }
 
-void in_bang_sai_phan(double x[MAX], double d[MAX][MAX], int m) {
+void in_bang_sai_phan(double d[MAX][MAX], int m)
+{
     int i, j;
-    printf("Bảng sai phân tiến:\n");
-    printf("%12s %14s", "x", "y");
-    for (j = 1; j < m; j++) printf(" %14s%d", "Delta^", j);
+    int w = 12;
+
+    printf("\nBANG SAI PHAN TIEN\n\n");
+
+    printf("%*s", w, "xi");
+    printf("%*s", w, "f(xi)");
+
+    for (j = 1; j < m; j++)
+        printf("%*s%d%s", w - 3, "Δ^", j, "f");
+
     printf("\n");
-    for (i = 0; i < m; i++) {
-        printf("%12.6lf ", gan_bang_0(x[i]) ? 0.0 : x[i]);
-        for (j = 0; j < m - i; j++) printf("%14.6lf ", gan_bang_0(d[i][j]) ? 0.0 : d[i][j]);
+
+    for (i = 0; i < m; i++)
+    {
+        printf("%*d", w, i + 1);
+for (j = 0; j < m; j++)
+        {
+            if (j <= i)
+            {
+                double val = gan_bang_0(d[i - j][j]) ? 0.0 : d[i - j][j];
+                printf("%*.6lf", w, val);
+            }
+            else
+            {
+                printf("%*s", w, "");
+            }
+        }
+
         printf("\n");
     }
 }
@@ -1443,7 +1559,7 @@ void chay_noi_suy_co_ban(int loai) {
     if (loai == 5) {
         in_muc("Bảng sai phân");
         lap_bang_sai_phan(y, d, m);
-        in_bang_sai_phan(x, d, m);
+        in_bang_sai_phan(d, m);
     }
 
     in_muc("Kết quả");
@@ -1459,7 +1575,7 @@ void chay_bang_sai_phan(void) {
     if (!x_cach_deu(x, m)) printf("Lưu ý: bảng sai phân Newton nên dùng với các mốc x cách đều.\n");
     lap_bang_sai_phan(y, d, m);
     in_muc("Kết quả");
-    in_bang_sai_phan(x, d, m);
+    in_bang_sai_phan(d, m);
 }
 
 void chay_hermite(void) {
